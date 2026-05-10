@@ -91,7 +91,7 @@ export default function AdminDashboard() {
 
     const fetchStats = async () => {
       try {
-        const token = localStorage.getItem('diwan_auth_token')
+        const token = localStorage.getItem('admin_token')
         const res = await fetch(`${API_V1_URL}/stats/dashboard`, {
           headers: {
             'Authorization': `Bearer ${token}`
