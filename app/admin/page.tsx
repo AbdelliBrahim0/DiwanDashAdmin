@@ -13,6 +13,7 @@ import {
   mockBlackFriday,
   mockHappyHour,
 } from '@/lib/mock-data'
+import { API_V1_URL } from '@/lib/backend'
 import {
   Package,
   Layers,
@@ -61,15 +62,53 @@ const translations = {
   },
 }
 
+interface DashboardStats {
+  total_users: number
+  total_orders: number
+  total_products: number
+  total_categories: number
+  total_revenue: number
+  orders_today: number
+  revenue_today: number
+  active_promo_codes: number
+  new_users_today: number
+  order_growth: number
+  recent_orders: any[]
+  recent_products: any[]
+}
+
 export default function AdminDashboard() {
   const { isLoggedIn, logout } = useAuth()
   const [lang, setLang] = useState<'fr' | 'ar'>('fr')
   const [isHydrated, setIsHydrated] = useState(false)
+  const [statsData, setStatsData] = useState<DashboardStats | null>(null)
+  const [isLoadingStats, setIsLoadingStats] = useState(true)
 
   useEffect(() => {
     const savedLang = (localStorage.getItem('language') as 'fr' | 'ar') || 'fr'
     setLang(savedLang)
     setIsHydrated(true)
+
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('diwan_auth_token')
+        const res = await fetch(`${API_V1_URL}/stats/dashboard`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setStatsData(data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch stats:', error)
+      } finally {
+        setIsLoadingStats(false)
+      }
+    }
+
+    fetchStats()
   }, [])
 
   const handleLanguageChange = (newLang: 'fr' | 'ar') => {
@@ -97,37 +136,37 @@ export default function AdminDashboard() {
   const stats = [
     {
       label: t.totalProducts,
-      value: mockProducts.length,
+      value: statsData?.total_products ?? '...',
       icon: Package,
       color: 'from-blue-500 to-blue-600',
     },
     {
       label: t.totalCategories,
-      value: mockCategories.length,
+      value: statsData?.total_categories ?? '...',
       icon: Layers,
       color: 'from-purple-500 to-purple-600',
     },
     {
       label: t.activeDiscounts,
-      value: activeDiscounts,
+      value: statsData?.active_promo_codes ?? '...',
       icon: Zap,
       color: 'from-yellow-500 to-yellow-600',
     },
     {
       label: t.revenue,
-      value: '12,450 TND',
+      value: `${(statsData?.total_revenue ?? 0).toLocaleString()} TND`,
       icon: TrendingUp,
       color: 'from-green-500 to-green-600',
     },
     {
       label: t.customers,
-      value: '342',
+      value: statsData?.total_users ?? '...',
       icon: Users,
       color: 'from-pink-500 to-pink-600',
     },
     {
       label: t.orders,
-      value: '156',
+      value: statsData?.total_orders ?? '...',
       icon: ShoppingCart,
       color: 'from-indigo-500 to-indigo-600',
     },
@@ -186,20 +225,20 @@ export default function AdminDashboard() {
                 </h3>
               </div>
               <div className="space-y-3">
-                {mockProducts.slice(0, 3).map((product) => (
+                {statsData?.recent_products.map((product: any) => (
                   <div
                     key={product.id}
-                    className="flex items-center gap-3 p-3 bg-secondary/30 rounded"
+                    className="flex items-center gap-3 p-3 bg-secondary/30 rounded border border-border/50"
                   >
                     <div className="w-10 h-10 bg-accent/20 rounded flex items-center justify-center">
                       <Package size={20} className="text-accent" />
                     </div>
                     <div className="flex-1">
                       <p className="text-foreground font-medium text-sm">
-                        {lang === 'fr' ? product.name : product.nameAr}
+                        {lang === 'fr' ? product.name : product.name_ar}
                       </p>
                       <p className="text-muted-foreground text-xs">
-                        {product.price.toFixed(2)} TND
+                        {Number(product.price).toFixed(2)} TND
                       </p>
                     </div>
                     <span className="text-accent font-semibold text-sm">
@@ -207,45 +246,56 @@ export default function AdminDashboard() {
                     </span>
                   </div>
                 ))}
+                {(!statsData?.recent_products || statsData.recent_products.length === 0) && (
+                  <p className="text-muted-foreground text-sm py-4 text-center">
+                    {lang === 'fr'
+                      ? 'Aucun produit récent'
+                      : 'لا توجد منتجات حديثة'}
+                  </p>
+                )}
               </div>
             </Card>
 
-            {/* Active Promotions */}
+            {/* Recent Orders */}
             <Card className="bg-card border-border p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                  <Flame size={20} className="text-accent" />
-                  {lang === 'fr' ? 'Promotions Actives' : 'العروض النشطة'}
+                  <ShoppingCart size={20} className="text-accent" />
+                  {lang === 'fr' ? 'Dernières Commandes' : 'آخر الطلبات'}
                 </h3>
               </div>
               <div className="space-y-3">
-                {mockBlackFriday
-                  .filter((b) => b.active)
-                  .map((promo) => (
-                    <div
-                      key={promo.id}
-                      className="p-3 bg-secondary/30 rounded border border-accent/20"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-foreground font-medium text-sm">
-                            {lang === 'fr' ? promo.name : promo.nameAr}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            {promo.startDate} → {promo.endDate}
-                          </p>
-                        </div>
-                        <span className="bg-accent text-accent-foreground px-3 py-1 rounded text-sm font-bold">
-                          -{promo.discount}%
-                        </span>
-                      </div>
+                {statsData?.recent_orders.map((order: any) => (
+                  <div
+                    key={order.id}
+                    className="flex items-center gap-3 p-3 bg-secondary/30 rounded border border-border/50"
+                  >
+                    <div className="w-10 h-10 bg-indigo-500/20 rounded flex items-center justify-center">
+                      <ShoppingCart size={20} className="text-indigo-500" />
                     </div>
-                  ))}
-                {activeBlackFriday === 0 && (
+                    <div className="flex-1">
+                      <p className="text-foreground font-medium text-sm">
+                        {order.customer_name}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {new Date(order.created_at).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'ar-TN')}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-accent font-semibold text-sm">
+                        {order.total_amount.toFixed(2)} TND
+                      </p>
+                      <span className="text-[10px] uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">
+                        {order.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {(!statsData?.recent_orders || statsData.recent_orders.length === 0) && (
                   <p className="text-muted-foreground text-sm py-4 text-center">
                     {lang === 'fr'
-                      ? 'Aucune promotion active'
-                      : 'لا توجد عروض نشطة'}
+                      ? 'Aucune commande récente'
+                      : 'لا توجد طلبات حديثة'}
                   </p>
                 )}
               </div>
@@ -256,37 +306,40 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border-blue-500/20 p-6">
               <h4 className="text-foreground font-bold mb-2">
-                {lang === 'fr' ? 'Total Ventes' : 'إجمالي المبيعات'}
+                {lang === 'fr' ? 'Ventes Aujourd\'hui' : 'مبيعات اليوم'}
               </h4>
-              <p className="text-3xl font-bold text-accent">24,890 TND</p>
+              <p className="text-3xl font-bold text-accent">{(statsData?.revenue_today ?? 0).toLocaleString()} TND</p>
               <p className="text-muted-foreground text-sm mt-2">
                 {lang === 'fr'
-                  ? '+12% cette semaine'
-                  : '+12% هذا الأسبوع'}
+                  ? `${statsData?.orders_today ?? 0} commandes aujourd'hui`
+                  : `${statsData?.orders_today ?? 0} طلبات اليوم`}
               </p>
             </Card>
 
             <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border-purple-500/20 p-6">
               <h4 className="text-foreground font-bold mb-2">
-                {lang === 'fr' ? 'Visiteurs' : 'الزوار'}
+                {lang === 'fr' ? 'Nouveaux Clients' : 'عملاء جدد'}
               </h4>
-              <p className="text-3xl font-bold text-accent">2,458</p>
+              <p className="text-3xl font-bold text-accent">{statsData?.new_users_today ?? 0}</p>
               <p className="text-muted-foreground text-sm mt-2">
                 {lang === 'fr'
-                  ? '+8% ce mois'
-                  : '+8% هذا الشهر'}
+                  ? 'Aujourd\'hui'
+                  : 'اليوم'}
               </p>
             </Card>
 
             <Card className="bg-gradient-to-br from-pink-500/10 to-pink-600/10 border-pink-500/20 p-6">
               <h4 className="text-foreground font-bold mb-2">
-                {lang === 'fr' ? 'Panier Moyen' : 'متوسط السلة'}
+                {lang === 'fr' ? 'Croissance Commandes' : 'نمو الطلبات'}
               </h4>
-              <p className="text-3xl font-bold text-accent">72.50 TND</p>
+              <p className="text-3xl font-bold text-accent">
+                {statsData?.order_growth && statsData.order_growth > 0 ? '+' : ''}
+                {statsData?.order_growth ?? 0}%
+              </p>
               <p className="text-muted-foreground text-sm mt-2">
                 {lang === 'fr'
-                  ? '+5% depuis hier'
-                  : '+5% منذ أمس'}
+                  ? 'Par rapport à hier'
+                  : 'مقارنة بيوم أمس'}
               </p>
             </Card>
           </div>
