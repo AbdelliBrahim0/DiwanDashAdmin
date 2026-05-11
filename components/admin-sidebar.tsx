@@ -18,6 +18,7 @@ import {
   LogOut,
   Settings,
   Users,
+  Boxes,
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -79,6 +80,11 @@ export function AdminSidebar({ onLogout, lang }: SidebarProps) {
       name: lang === 'fr' ? 'Happy Hour' : 'ساعة السعادة',
       path: '/admin/happy-hour',
       icon: Settings,
+    },
+    {
+      name: lang === 'fr' ? 'Packs' : 'الباقات',
+      path: '/admin/packs',
+      icon: Boxes,
     },
   ]
 
