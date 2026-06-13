@@ -8,6 +8,7 @@ import {
   Package,
   ShoppingBag,
   Layers,
+  Layers3,
   Grid,
   Tag,
   Zap,
@@ -85,6 +86,11 @@ export function AdminSidebar({ onLogout, lang }: SidebarProps) {
       name: lang === 'fr' ? 'Packs' : 'الباقات',
       path: '/admin/packs',
       icon: Boxes,
+    },
+    {
+      name: lang === 'fr' ? 'Atelier 3D' : 'الورشة ثلاثية الأبعاد',
+      path: '/admin/atelier-3d',
+      icon: Layers3,
     },
   ]
 

@@ -49,39 +49,39 @@
   --card-foreground: #f0f0f0;
   --popover: #1a1a1a;
   --popover-foreground: #f0f0f0;
-  
+
   /* Primary: Gold accent */
   --primary: #d4af37;
   --primary-foreground: #0f0f0f;
-  
+
   /* Secondary: Dark grays for contrast */
   --secondary: #2a2a2a;
   --secondary-foreground: #f0f0f0;
-  
+
   /* Muted: Subtle grays */
   --muted: #3a3a3a;
   --muted-foreground: #a0a0a0;
-  
+
   /* Accent: Gold */
   --accent: #d4af37;
   --accent-foreground: #0f0f0f;
-  
+
   /* Borders and inputs */
   --border: #333333;
   --input: #1a1a1a;
   --ring: #d4af37;
-  
+
   /* Destructive: Red for delete/danger actions */
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  
+
   /* Chart colors */
   --chart-1: #d4af37;
   --chart-2: #92400e;
   --chart-3: #a16207;
   --chart-4: #78350f;
   --chart-5: #b45309;
-  
+
   /* Sidebar */
   --sidebar: #1a1a1a;
   --sidebar-foreground: #f0f0f0;
@@ -138,6 +138,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
