@@ -449,6 +449,9 @@ export default function ProductsPage() {
                   <thead>
                     <tr className="border-b border-border">
                       <th className="text-left py-3 px-4 text-foreground font-semibold">
+                        ID
+                      </th>
+                      <th className="text-left py-3 px-4 text-foreground font-semibold">
                         {t.name}
                       </th>
                       <th className="text-left py-3 px-4 text-foreground font-semibold">
@@ -471,6 +474,9 @@ export default function ProductsPage() {
                         key={product.id}
                         className="border-b border-border hover:bg-secondary/50 transition"
                       >
+                        <td className="py-4 px-4 text-accent font-semibold">
+                          #{product.id}
+                        </td>
                         <td className="py-4 px-4">
                           <div>
                             <p className="text-foreground font-medium">

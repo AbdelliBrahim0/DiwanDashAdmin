@@ -28,7 +28,8 @@ import {
 
 interface OrderItem {
   id: number
-  product_id: string
+  product_id?: string
+  pack_id?: number
   quantity: number
   price_at_purchase: number
   original_price?: number
@@ -38,6 +39,11 @@ interface OrderItem {
     name: string
     image_url?: string
   }
+  pack?: {
+    name: string
+    image_url?: string
+  }
+  details?: { id: number, name: string }[]
 }
 
 interface User {
@@ -535,39 +541,54 @@ export default function OrdersPage() {
                         </h4>
                         <div className="space-y-2">
                           {order.items.map((item, idx) => (
-                            <div key={idx} className="flex items-center gap-3 bg-background/50 p-2 rounded-lg border border-border/30">
-                              <div className="w-10 h-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                                {item.product?.image_url && (
-                                  <img src={item.product.image_url} alt="" className="object-cover w-full h-full" />
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <p className="text-xs font-bold truncate text-foreground">{item.product?.name}</p>
-                                  <span className="text-[10px] text-muted-foreground font-mono bg-muted/50 px-1 rounded">
-                                    ID: #{item.product_id}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${
-                                    item.type === 'rent' ? 'bg-blue-500/10 text-blue-500' : 'bg-sidebar-primary/10 text-sidebar-primary'
-                                  }`}>
-                                    {item.type === 'rent' ? t.rent : t.sell}
-                                  </span>
-                                  {item.source && (
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium italic">
-                                      {item.source}
-                                    </span>
+                            <div key={idx} className="flex flex-col gap-2 bg-background/50 p-2 rounded-lg border border-border/30">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                                  {(item.product?.image_url || item.pack?.image_url) && (
+                                    <img src={item.product?.image_url || item.pack?.image_url} alt="" className="object-cover w-full h-full" />
                                   )}
-                                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                    {item.original_price && item.original_price > item.price_at_purchase && (
-                                      <span className="line-through opacity-50">{item.original_price} DT</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-xs font-bold truncate text-foreground">{item.product?.name || item.pack?.name}</p>
+                                    <span className="text-[10px] text-muted-foreground font-mono bg-muted/50 px-1 rounded">
+                                      ID: #{item.product_id || item.pack_id}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${
+                                      item.type === 'rent' ? 'bg-blue-500/10 text-blue-500' : 'bg-sidebar-primary/10 text-sidebar-primary'
+                                    }`}>
+                                      {item.type === 'rent' ? t.rent : t.sell}
+                                    </span>
+                                    {item.source && (
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium italic">
+                                        {item.source}
+                                      </span>
                                     )}
-                                    <span className="font-bold text-foreground">{item.price_at_purchase} DT</span>
-                                    <span>x {item.quantity}</span>
-                                  </span>
+                                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                      {item.original_price && item.original_price > item.price_at_purchase && (
+                                        <span className="line-through opacity-50">{item.original_price} DT</span>
+                                      )}
+                                      <span className="font-bold text-foreground">{item.price_at_purchase} DT</span>
+                                      <span>x {item.quantity}</span>
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
+                              {item.details && item.details.length > 0 && (
+                                <div className="mt-1 ml-13 pl-3 border-l-2 border-border/50">
+                                  <p className="text-[10px] font-semibold text-muted-foreground uppercase mb-1">Inclus :</p>
+                                  <ul className="space-y-1">
+                                    {item.details.map((detail, dIdx) => (
+                                      <li key={dIdx} className="text-[11px] text-foreground flex items-center gap-2">
+                                        <span className="w-1 h-1 rounded-full bg-sidebar-primary/50"></span>
+                                        {detail.name} <span className="text-muted-foreground font-mono ml-auto">ID: #{detail.id}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
